@@ -26,6 +26,14 @@ VALUES
 
 INSERT INTO album
 VALUES
+    (default, 'album_name_1', '2018')
+    (default, 'album_name_2', '2010')
+    (default, 'album_name_3', '2012')
+    (default, 'album_name_4', '2015')
+    (default, 'album_name_5', '2018')
+    (default, 'album_name_6', '2019')
+    (default, 'album_name_7', '2020')
+    (default, 'album_name_8', '2002')
     (default, 'album_name_9', '2018'),
     (default, 'album_name_10', '2010'),
     (default, 'album_name_11', '2012'),
