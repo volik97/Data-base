@@ -16,9 +16,9 @@ create table album (
 	id_author integer references author(id)
 );
 
-create table track (
+create table Track (
 	id serial primary key,
-	track_name varchar(40) not null,
+	track_name varchar(100) not null,
 	duration real not null,
-	id_album integer references album(id)
+	id_album integer references album(id) not null
 );
