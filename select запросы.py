@@ -52,7 +52,7 @@ connection = engine.connect()
 #     WHERE track_name iLIKE '%%my%%';
 #     ''').fetchall())
 
-# количество исполнителей в каждом жанре;
+#1 количество исполнителей в каждом жанре;
 print(connection.execute(
     '''
     SELECT genre_id, COUNT(*) FROM genre_author
@@ -60,7 +60,7 @@ print(connection.execute(
     ORDER BY genre_id;
     ''').fetchall())
 
-# количество треков, вошедших в альбомы 2019-2020 годов;
+#2 количество треков, вошедших в альбомы 2019-2020 годов;
 print(connection.execute(
     '''
     SELECT COUNT(t.id) 
@@ -70,7 +70,7 @@ print(connection.execute(
     WHERE a.release_year BETWEEN 2019 AND 2020;
     ''').fetchall())
 
-# средняя продолжительность треков по каждому альбому; (Не получается через ROUND округлить до 2-ух знаков)
+#3 средняя продолжительность треков по каждому альбому; (Не получается через ROUND округлить до 2-ух знаков)
 print(connection.execute(
     '''
     SELECT id_album, AVG(duration)
@@ -79,7 +79,7 @@ print(connection.execute(
     ORDER BY id_album;
     ''').fetchall())
 
-#все исполнители, которые не выпустили альбомы в 2020 году;
+#4 все исполнители, которые не выпустили альбомы в 2020 году;
 print(connection.execute(
     '''
     SELECT nickname FROM author
@@ -91,7 +91,7 @@ print(connection.execute(
                            ); 
     ''').fetchall())
 
-# названия сборников, в которых присутствует конкретный исполнитель (выберите сами);
+#5 названия сборников, в которых присутствует конкретный исполнитель (выберите сами);
 print(connection.execute(
     '''
     SELECT DISTINCT name_collection
@@ -104,28 +104,26 @@ print(connection.execute(
     WHERE nickname LIKE '%%author_7%%';
     ''').fetchall())
 
-# название альбомов, в которых присутствуют исполнители более 1 жанра;
+#6 название альбомов, в которых присутствуют исполнители более 1 жанра;
 print(connection.execute(
     '''
-    SELECT album_name FROM album A
+    SELECT album_name, COUNT(genre_name) FROM album A
     LEFT JOIN author_album B ON A.id = B.album_id
     LEFT JOIN author C ON B.author_id = C.id
-    LEFT JOIN (SELECT author_id, COUNT(genre_id) AS GENRE
-               FROM genre_author
-               GROUP BY author_id
-               HAVING COUNT(genre_id) > 1) D
-    ON A.id = D.author_id
-    WHERE NOT D.GENRE IS NULL;
+    LEFT JOIN genre_author D ON C.id = D.genre_id
+    LEFT JOIN genre E ON D.genre_id = E.id
+    GROUP BY album_name
+    HAVING COUNT(genre_name) > 1
     ''').fetchall())
 
-# наименование треков, которые не входят в сборники;
+#7 наименование треков, которые не входят в сборники;
 print(connection.execute(
     '''
     SELECT track_name FROM track
     WHERE id NOT IN (SELECT DISTINCT track_id FROM collection_track);
     ''').fetchall())
 
-# исполнителя(-ей), написавшего самый короткий по продолжительности трек (теоретически таких треков может быть несколько);
+#8 исполнителя(-ей), написавшего самый короткий по продолжительности трек (теоретически таких треков может быть несколько);
 print(connection.execute(
     '''
     SELECT A.nickname FROM author A
@@ -136,4 +134,15 @@ print(connection.execute(
     HAVING E.duration = (SELECT MIN(duration) FROM track);
 ''').fetchall())
 
-# название альбомов, содержащих наименьшее количество треков.
+#9 название альбомов, содержащих наименьшее количество треков.
+print(connection.execute(
+    '''
+    SELECT album.album_name, COUNT(t.track_name) FROM album album
+    JOIN track t ON album.id = t.id_album
+    GROUP BY album.album_name
+    HAVING COUNT(t.track_name) = (SELECT MIN(count)
+                                  FROM (SELECT album.album_name, COUNT(t.track_name) 
+                                        FROM album album
+                                        JOIN track t ON album.id = t.id_album
+                                        GROUP BY album.album_name) AS foo)
+''').fetchall())
